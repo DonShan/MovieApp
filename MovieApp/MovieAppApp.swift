@@ -10,22 +10,31 @@ import SwiftData
 
 @main
 struct MovieAppApp: App {
+    init() {
+        dependencyRegister()
+    }
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            Movie.self,
+            OfflineMovie.self,
+            CachedImage.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
         do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            let container = try ModelContainer(for: schema, configurations: [modelConfiguration])
+            FavoritesRepositoryFactory.sharedModelContainer = container
+            OfflineMoviesRepositoryFactory.sharedModelContainer = container
+            ImageCacheManager.sharedModelContainer = container
+            
+            return container
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
         }
     }()
-
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MainTabView()
         }
         .modelContainer(sharedModelContainer)
     }
